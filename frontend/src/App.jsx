@@ -8,14 +8,18 @@ function App() {
   const [statusFilter, setStatusFilter] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [nextPage, setNextPage] = useState(null);
+  const [previousPage, setPreviousPage] = useState(null);
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (pageUrl = null) => {
     setLoading(true);
 
-    const response = await getStudents(statusFilter);
+    const response = await getStudents(statusFilter, pageUrl);
 
     if (response.status === 200) {
       setStudents(response.data.results);
+      setNextPage(response.data.next);
+      setPreviousPage(response.data.previous);
     }
 
     setLoading(false);
@@ -151,6 +155,27 @@ function App() {
                 ))}
               </tbody>
             </table>
+            <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4">
+              <button
+                onClick={() => fetchStudents(previousPage)}
+                disabled={!previousPage}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              <span className="text-sm text-gray-500">
+                Showing {students.length} students
+              </span>
+
+              <button
+                onClick={() => fetchStudents(nextPage)}
+                disabled={!nextPage}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
