@@ -51,3 +51,71 @@ class StudentListCreateView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    
+class StudentDetailView(APIView):
+
+    def get_student(self, student_id):
+        try:
+            return Student.objects.get(pk=student_id)
+        except Student.DoesNotExist:
+            return None
+
+    def get(self, request, student_id):
+        student = self.get_student(student_id)
+
+        if student is None:
+            return Response(
+                {"error": "Student not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = StudentSerializer(student)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def put(self, request, student_id):
+        student = self.get_student(student_id)
+
+        if student is None:
+            return Response(
+                {"error": "Student not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = StudentSerializer(
+            student,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+            student = serializer.save()
+
+            return Response(
+                StudentSerializer(student).data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, student_id):
+        student = self.get_student(student_id)
+
+        if student is None:
+            return Response(
+                {"error": "Student not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        student.delete()
+
+        return Response(
+            {"message": "Student deleted successfully."},
+            status=status.HTTP_200_OK
+        )
