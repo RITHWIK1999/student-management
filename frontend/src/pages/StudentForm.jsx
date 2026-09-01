@@ -1,7 +1,12 @@
-import { useState } from "react";
-import { createStudent } from "../api/Api";
+import { useEffect, useState } from "react";
+import { createStudent, updateStudent } from "../api/Api";
 
-function StudentForm({ onStudentCreated, onCancel }) {
+function StudentForm({
+  onStudentCreated,
+  onStudentUpdated,
+  onCancel,
+  editingStudent,
+}) {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -13,12 +18,23 @@ function StudentForm({ onStudentCreated, onCancel }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (editingStudent) {
+      setFormData({
+        first_name: editingStudent.first_name,
+        last_name: editingStudent.last_name,
+        email: editingStudent.email,
+        date_of_birth: editingStudent.date_of_birth,
+        enrollment_status: editingStudent.enrollment_status,
+      });
+    }
+  }, [editingStudent]);
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -27,10 +43,21 @@ function StudentForm({ onStudentCreated, onCancel }) {
     setError("");
     setLoading(true);
 
-    const response = await createStudent(formData);
+    let response;
 
-    if (response.status === 201) {
-      onStudentCreated();
+    if (editingStudent) {
+      response = await updateStudent(editingStudent.id, formData);
+    } else {
+      response = await createStudent(formData);
+    }
+
+    if (response.status === 200 || response.status === 201) {
+      if (editingStudent) {
+        onStudentUpdated();
+      } else {
+        onStudentCreated();
+      }
+
       return;
     }
 
@@ -42,7 +69,7 @@ function StudentForm({ onStudentCreated, onCancel }) {
       } else if (errors.date_of_birth) {
         setError(errors.date_of_birth[0]);
       } else {
-        setError("Something went wrong.");
+        setError("Please check the entered information.");
       }
     } else {
       setError("Something went wrong.");
@@ -53,7 +80,9 @@ function StudentForm({ onStudentCreated, onCancel }) {
 
   return (
     <div className="mb-6 rounded-lg bg-white p-6 shadow">
-      <h2 className="mb-5 text-xl font-bold text-gray-900">Add Student</h2>
+      <h2 className="mb-5 text-xl font-bold text-gray-900">
+        {editingStudent ? "Edit Student" : "Add Student"}
+      </h2>
 
       {error && (
         <div className="mb-4 rounded-lg bg-red-100 p-4 text-sm text-red-700">
@@ -147,7 +176,11 @@ function StudentForm({ onStudentCreated, onCancel }) {
             disabled={loading}
             className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Student"}
+            {loading
+              ? "Saving..."
+              : editingStudent
+                ? "Update Student"
+                : "Create Student"}
           </button>
 
           <button

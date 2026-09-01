@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getStudents } from "./api/Api";
+import { getStudents, deleteStudent } from "./api/Api";
 import StudentForm from "./pages/StudentForm";
 
 function App() {
@@ -7,6 +7,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -18,6 +19,24 @@ function App() {
     }
 
     setLoading(false);
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this student?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const response = await deleteStudent(id);
+
+    if (response.status === 200) {
+      fetchStudents();
+    } else {
+      alert("Failed to delete student.");
+    }
   };
 
   useEffect(() => {
@@ -37,20 +56,31 @@ function App() {
           </div>
 
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setEditingStudent(null);
+              setShowForm(true);
+            }}
             className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700"
           >
             Add Student
           </button>
         </div>
 
-        {showForm && (
+        {(showForm || editingStudent) && (
           <StudentForm
+            editingStudent={editingStudent}
             onStudentCreated={() => {
               setShowForm(false);
               fetchStudents();
             }}
-            onCancel={() => setShowForm(false)}
+            onStudentUpdated={() => {
+              setEditingStudent(null);
+              fetchStudents();
+            }}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingStudent(null);
+            }}
           />
         )}
 
@@ -103,9 +133,19 @@ function App() {
                     <td className="px-6 py-4">{student.enrollment_status}</td>
 
                     <td className="px-6 py-4">
-                      <button className="mr-3 text-blue-600">Edit</button>
+                      <button
+                        onClick={() => setEditingStudent(student)}
+                        className="mr-3 text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
 
-                      <button className="text-red-600">Delete</button>
+                      <button
+                        onClick={() => handleDelete(student.id)}
+                        className="text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
