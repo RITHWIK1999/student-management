@@ -6,7 +6,7 @@ export const getStudents = async (statusFilter = "", pageUrl = null) => {
   try {
     const response = pageUrl
       ? await axios.get(pageUrl)
-      : await axios.get(`${url}/students/createview`, {
+      : await axios.get(`${url}/students/`, {
           params: {
             enrollment_status: statusFilter,
           },
@@ -20,7 +20,7 @@ export const getStudents = async (statusFilter = "", pageUrl = null) => {
 
 export const createStudent = async (data) => {
   try {
-    const response = await axios.post(`${url}/students/createview`, data);
+    const response = await axios.post(`${url}/students/`, data);
     return response;
   } catch (error) {
     return error;
@@ -29,7 +29,7 @@ export const createStudent = async (data) => {
 
 export const getStudent = async (id) => {
   try {
-    const response = await axios.get(`${url}/students/reviews/${id}`);
+    const response = await axios.get(`${url}/students/${id}`);
     return response;
   } catch (error) {
     return error;
@@ -38,7 +38,7 @@ export const getStudent = async (id) => {
 
 export const updateStudent = async (id, data) => {
   try {
-    const response = await axios.put(`${url}/students/reviews/${id}`, data);
+    const response = await axios.put(`${url}/students/${id}`, data);
 
     return response;
   } catch (error) {
@@ -48,7 +48,7 @@ export const updateStudent = async (id, data) => {
 
 export const deleteStudent = async (id) => {
   try {
-    const response = await axios.delete(`${url}/students/reviews/${id}`);
+    const response = await axios.delete(`${url}/students/${id}`);
 
     return response;
   } catch (error) {

@@ -18,7 +18,7 @@ class StudentAPITests(APITestCase):
 
     def test_create_student(self):
         response = self.client.post(
-            "/students/createview",
+            "/students/",
             self.student_data,
             format="json"
         )
@@ -43,7 +43,7 @@ class StudentAPITests(APITestCase):
         data["date_of_birth"] = "2030-01-01"
 
         response = self.client.post(
-            "/students/createview",
+            "/students/",
             data,
             format="json"
         )
@@ -59,7 +59,7 @@ class StudentAPITests(APITestCase):
         )
 
     def test_student_not_found(self):
-        response = self.client.get("/students/createview/9999")
+        response = self.client.get("/students/9999")
 
         self.assertEqual(
             response.status_code,
@@ -68,13 +68,13 @@ class StudentAPITests(APITestCase):
 
     def test_duplicate_email(self):
         self.client.post(
-            "/students/createview",
+            "/students/",
             self.student_data,
             format="json"
         )
 
         response = self.client.post(
-            "/students/createview",
+            "/students/",
             self.student_data,
             format="json"
         )
@@ -86,7 +86,7 @@ class StudentAPITests(APITestCase):
 
     def test_filter_by_enrollment_status(self):
         self.client.post(
-            "/students/createview",
+            "/students/",
             self.student_data,
             format="json"
         )
@@ -96,13 +96,13 @@ class StudentAPITests(APITestCase):
         graduated_student["enrollment_status"] = "graduated"
 
         self.client.post(
-            "/students/createview",
+            "/students/",
             graduated_student,
             format="json"
         )
 
         response = self.client.get(
-            "/students/createview?enrollment_status=active"
+            "/students/?enrollment_status=active"
         )
 
         self.assertEqual(
