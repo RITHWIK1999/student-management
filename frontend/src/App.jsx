@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { getStudents } from "./api/Api";
+import StudentForm from "./pages/StudentForm";
 
 function App() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -34,10 +36,23 @@ function App() {
             <p className="mt-1 text-gray-500">Manage student records</p>
           </div>
 
-          <button className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700">
+          <button
+            onClick={() => setShowForm(true)}
+            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700"
+          >
             Add Student
           </button>
         </div>
+
+        {showForm && (
+          <StudentForm
+            onStudentCreated={() => {
+              setShowForm(false);
+              fetchStudents();
+            }}
+            onCancel={() => setShowForm(false)}
+          />
+        )}
 
         <div className="mb-4 rounded-lg bg-white p-4 shadow">
           <label className="mr-3 font-medium text-gray-700">
