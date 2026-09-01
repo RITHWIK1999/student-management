@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import IntegrityError
 
 from .models import Student
 from .serializers import StudentSerializer
@@ -40,18 +41,33 @@ class StudentListCreateView(APIView):
         serializer = StudentSerializer(data=request.data)
 
         if serializer.is_valid():
-            student = serializer.save()
+            try:
+                student = serializer.save()
+            except IntegrityError:
+                return Response(
+                {"error": "A student with this email already exists."},
+                status=status.HTTP_409_CONFLICT
+                )
 
             return Response(
-                StudentSerializer(student).data,
-                status=status.HTTP_201_CREATED
+            StudentSerializer(student).data,
+            status=status.HTTP_201_CREATED
             )
+
+        if "email" in serializer.errors:
+            email_errors = serializer.errors["email"]
+
+            for error in email_errors:
+                if "unique" in str(error).lower() or "already exists" in str(error).lower():
+                    return Response(
+                    {"error": "A student with this email already exists."},
+                    status=status.HTTP_409_CONFLICT
+                )
 
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
-
     
 class StudentDetailView(APIView):
 
